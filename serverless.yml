@@ -61,11 +61,29 @@ plugins:
 #    - exclude-me-dir/**
 
 functions:
+  addCognitoUserToMongoDb:
+    handler: handler.addCognitoUserToMongoDb
+    events:
+      - http:
+          path: addCognitoUserToMongoDb
+          method: post
+          cors: true
+  addEmployer:
+    handler: handler.addEmployer
+    events:
+      - http:
+          path: addEmployer
+          method: post
+          cors: true
+  addEmployee:
+    handler: handler.addEmployee
+    events:
+      - http:
+          path: addEmployee
+          method: post
+          cors: true
   addJob:
     handler: handler.addJob
-    #    The following are a few example events you can configure
-    #    NOTE: Please make sure to change your handler code to work with those events
-    #    Check the event documentation for details
     events:
       - http:
           path: addJob
