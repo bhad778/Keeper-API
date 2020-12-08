@@ -6,10 +6,8 @@ const Job = require('./models/Job');
 
 module.exports.addJob = async (event, context, callback) => {
   context.callbackWaitsForEmptyEventLoop = false;
-  console.log('inside addjob function');
 
   connectToDatabase().then(() => {
-    console.log('before .then');
     Job.create(JSON.parse(event.body))
       .then(
         (job) =>
@@ -17,7 +15,6 @@ module.exports.addJob = async (event, context, callback) => {
             statusCode: 200,
             body: JSON.stringify(job),
           }),
-        console.log('after .then')
       )
       .catch((err) =>
         callback(null, {
@@ -26,7 +23,6 @@ module.exports.addJob = async (event, context, callback) => {
           body: 'Could not create the job.',
         })
       );
-    console.log('after it all');
   });
 
   // Use this code if you don't use the http event with the LAMBDA-PROXY integration

@@ -9,13 +9,12 @@ module.exports = connectToDatabase = () => {
   }
 
   console.log('=> using new database connection');
-  return mongoose
-    .connect(process.env.DB, function (err) {
-      if (err) {
-        console.log(err);
-      }
-    })
-    .then((db) => {
-      isConnected = db.connections[0].readyState;
-    });
+  const db = mongoose.connection;
+  db.on('error', console.error.bind(console, 'connection error:'));
+  db.once('open', function() {
+      console.log("yay")
+  });
+  return mongoose.connect(process.env.DB, {useNewUrlParser: true}).then((db) => {
+    isConnected = db.connections[0].readyState;
+  });
 };
