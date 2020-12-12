@@ -89,6 +89,13 @@ functions:
           path: addJob
           method: post
           cors: true
+  getJobs:
+    handler: handler.getJobs
+    events:
+      - http:
+          path: getJobs
+          method: post
+          cors: true
 #      - websocket: $connect
 #      - s3: ${env:BUCKET}
 #      - schedule: rate(10 minutes)
