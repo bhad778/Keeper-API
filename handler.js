@@ -21,7 +21,12 @@ module.exports.addCognitoUserToMongoDb = (event, context, callback) => {
   if (event.request.userAttributes.email === 'bhad778@gmail.com') {
     connectToDatabase().then(() => {
       Employer.create(newUser)
-        .then(context.done(null, event))
+        .then((employer) =>
+          callback(null, {
+            statusCode: 200,
+            body: JSON.stringify(employer),
+          })
+        )
         .catch((err) =>
           callback(null, {
             statusCode: err.statusCode || 500,
@@ -33,7 +38,12 @@ module.exports.addCognitoUserToMongoDb = (event, context, callback) => {
   } else if (event.request.userAttributes.email === 'bhad7778@gmail.com') {
     connectToDatabase().then(() => {
       Employee.create(newUser)
-        .then(context.done(null, event))
+        .then((employee) =>
+          callback(null, {
+            statusCode: 200,
+            body: JSON.stringify(employee),
+          })
+        )
         .catch((err) =>
           callback(null, {
             statusCode: err.statusCode || 500,
