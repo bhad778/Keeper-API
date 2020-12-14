@@ -13,18 +13,22 @@ module.exports.addCognitoUserToMongoDb = (event, context, callback) => {
   let newUser = {
     email: event.request.userAttributes.email,
     phoneNumber: event.request.userAttributes.phone_number,
+    firstName: event.request.userAttributes.name,
+    lastName: event.request.userAttributes.family_name,
+    accountType: event.request.userAttributes['custom:custom:accountType'],
+    companyName: event.request.userAttributes['custom:custom:companyName'],
   };
 
   // change to if(userAttribute.type = "employee")
   // TODO fix error handling
   // TODO change trigger to post authentication
-  if (event.request.userAttributes.email === 'bhad778@gmail.com') {
+  if (newUser.accountType === 'employer') {
     connectToDatabase().then(() => {
       Employer.create(newUser)
         .then(() => callback(null, event))
         .catch((err) => callback(Error(err)));
     });
-  } else if (event.request.userAttributes.email === 'bhad7778@gmail.com') {
+  } else if (newUser.accountType === 'employee') {
     connectToDatabase().then(() => {
       Employee.create(newUser)
         .then(() => callback(null, event))
