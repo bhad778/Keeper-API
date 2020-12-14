@@ -21,17 +21,16 @@ module.exports.addCognitoUserToMongoDb = (event, context, callback) => {
   if (event.request.userAttributes.email === 'bhad778@gmail.com') {
     connectToDatabase().then(() => {
       Employer.create(newUser)
-        .then((employer) => callback(null, event))
-        .catch((err) => callback(nError(err)));
+        .then(() => callback(null, event))
+        .catch((err) => callback(Error(err)));
     });
   } else if (event.request.userAttributes.email === 'bhad7778@gmail.com') {
     connectToDatabase().then(() => {
       Employee.create(newUser)
-        .then((employee) => callback(null, event))
+        .then(() => callback(null, event))
         .catch((err) => callback(Error(err)));
     });
   }
-  context.do;
 };
 
 module.exports.addEmployer = (event, context, callback) => {
@@ -39,7 +38,7 @@ module.exports.addEmployer = (event, context, callback) => {
 
   connectToDatabase().then(() => {
     Employer.create(JSON.parse(event.body))
-      .then((employer) => callback(null, event))
+      .then(() => callback(null, event))
       .catch((err) => callback(Error(err)));
   });
 };
@@ -49,7 +48,7 @@ module.exports.addEmployee = (event, context, callback) => {
 
   connectToDatabase().then(() => {
     Employee.create(JSON.parse(event.body))
-      .then((employee) => callback(null, event))
+      .then(() => callback(null, event))
       .catch((err) => callback(Error(err)));
   });
 };
@@ -75,12 +74,12 @@ module.exports.addJob = async (event, context, callback) => {
 
   connectToDatabase().then(() => {
     Job.create(body)
-      .then((job) => callback(null, event))
+      .then(() => callback(null, event))
       .catch((err) => callback(Error(err)));
   });
 };
 
-module.exports.getJobs = async (event, context, callback) => {
+module.exports.getJobs = async (event) => {
   var body = JSON.parse(event.body);
 
   connectToDatabase().then(() => {
