@@ -21,38 +21,17 @@ module.exports.addCognitoUserToMongoDb = (event, context, callback) => {
   if (event.request.userAttributes.email === 'bhad778@gmail.com') {
     connectToDatabase().then(() => {
       Employer.create(newUser)
-        .then((employer) =>
-          callback(null, {
-            statusCode: 200,
-            body: JSON.stringify(employer),
-          })
-        )
-        .catch((err) =>
-          callback(null, {
-            statusCode: err.statusCode || 500,
-            headers: { 'Content-Type': 'text/plain' },
-            body: 'Could not add the job.',
-          })
-        );
+        .then((employer) => callback(null, event))
+        .catch((err) => callback(nError(err)));
     });
   } else if (event.request.userAttributes.email === 'bhad7778@gmail.com') {
     connectToDatabase().then(() => {
       Employee.create(newUser)
-        .then((employee) =>
-          callback(null, {
-            statusCode: 200,
-            body: JSON.stringify(employee),
-          })
-        )
-        .catch((err) =>
-          callback(null, {
-            statusCode: err.statusCode || 500,
-            headers: { 'Content-Type': 'text/plain' },
-            body: 'Could not create the employee.',
-          })
-        );
+        .then((employee) => callback(null, event))
+        .catch((err) => callback(Error(err)));
     });
   }
+  context.do;
 };
 
 module.exports.addEmployer = (event, context, callback) => {
@@ -60,40 +39,18 @@ module.exports.addEmployer = (event, context, callback) => {
 
   connectToDatabase().then(() => {
     Employer.create(JSON.parse(event.body))
-      .then((employer) =>
-        callback(null, {
-          statusCode: 200,
-          body: JSON.stringify(employer),
-        })
-      )
-      .catch((err) =>
-        callback(null, {
-          statusCode: err.statusCode || 500,
-          headers: { 'Content-Type': 'text/plain' },
-          body: 'Could not add the job.',
-        })
-      );
+      .then((employer) => callback(null, event))
+      .catch((err) => callback(Error(err)));
   });
 };
 
-module.exports.addEmployee = async (event, context, callback) => {
+module.exports.addEmployee = (event, context, callback) => {
   context.callbackWaitsForEmptyEventLoop = false;
 
   connectToDatabase().then(() => {
     Employee.create(JSON.parse(event.body))
-      .then((employee) =>
-        callback(null, {
-          statusCode: 200,
-          body: JSON.stringify(employee),
-        })
-      )
-      .catch((err) =>
-        callback(null, {
-          statusCode: err.statusCode || 500,
-          headers: { 'Content-Type': 'text/plain' },
-          body: 'Could not create the employee.',
-        })
-      );
+      .then((employee) => callback(null, event))
+      .catch((err) => callback(Error(err)));
   });
 };
 
@@ -118,19 +75,8 @@ module.exports.addJob = async (event, context, callback) => {
 
   connectToDatabase().then(() => {
     Job.create(body)
-      .then((job) =>
-        callback(null, {
-          statusCode: 200,
-          body: JSON.stringify(job),
-        })
-      )
-      .catch((err) =>
-        callback(null, {
-          statusCode: err.statusCode || 500,
-          headers: { 'Content-Type': 'text/plain' },
-          body: 'Could not create the job.',
-        })
-      );
+      .then((job) => callback(null, event))
+      .catch((err) => callback(Error(err)));
   });
 };
 
@@ -153,6 +99,6 @@ module.exports.getJobs = async (event, context, callback) => {
       .then((res) => {
         console.log(res);
       })
-      .catch((err) => console.log(err));
+      .catch((err) => Error(err));
   });
 };
