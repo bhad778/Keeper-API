@@ -25,14 +25,18 @@ module.exports.addCognitoUserToMongoDb = (event, context, callback) => {
   if (newUser.accountType === 'employer') {
     connectToDatabase().then(() => {
       Employer.create(newUser)
-        .then(() => callback(null, event))
-        .catch((err) => callback(Error(err)));
+        .then((res) => {
+          callback(null, { statusCode: 200, body: JSON.stringify(res) });
+        })
+        .catch((err) => callback(new Error(err)));
     });
   } else if (newUser.accountType === 'employee') {
     connectToDatabase().then(() => {
       Employee.create(newUser)
-        .then(() => callback(null, event))
-        .catch((err) => callback(Error(err)));
+        .then((res) => {
+          callback(null, { statusCode: 200, body: JSON.stringify(res) });
+        })
+        .catch((err) => callback(new Error(err)));
     });
   }
 };
@@ -42,8 +46,10 @@ module.exports.addEmployer = (event, context, callback) => {
 
   connectToDatabase().then(() => {
     Employer.create(JSON.parse(event.body))
-      .then(() => callback(null, event))
-      .catch((err) => callback(Error(err)));
+      .then((res) => {
+        callback(null, { statusCode: 200, body: JSON.stringify(res) });
+      })
+      .catch((err) => callback(new Error(err)));
   });
 };
 
@@ -52,17 +58,19 @@ module.exports.addEmployee = (event, context, callback) => {
 
   connectToDatabase().then(() => {
     Employee.create(JSON.parse(event.body))
-      .then(() => callback(null, event))
-      .catch((err) => callback(Error(err)));
+      .then((res) => {
+        callback(null, { statusCode: 200, body: JSON.stringify(res) });
+      })
+      .catch((err) => callback(new Error(err)));
   });
 };
 
-module.exports.addJob = async (event, context, callback) => {
+module.exports.addJob = (event, context, callback) => {
   context.callbackWaitsForEmptyEventLoop = false;
   var body = JSON.parse(event.body);
   var uriEncodedAddress = encodeURIComponent(body.address);
 
-  await axios
+  axios
     .get(
       `https://maps.googleapis.com/maps/api/geocode/json?address=${uriEncodedAddress}&key=AIzaSyDoUt-NQKYX-8sZU87ISTxNIg7DQijLZ7A`
     )
@@ -74,16 +82,19 @@ module.exports.addJob = async (event, context, callback) => {
           response.data.results[0].geometry.location.lat,
         ],
       };
+    })
+    .then(() => {
+      connectToDatabase().then(() => {
+        Job.create(body)
+          .then((res) => {
+            callback(null, { statusCode: 200, body: JSON.stringify(res) });
+          })
+          .catch((err) => callback(new Error(err)));
+      });
     });
-
-  connectToDatabase().then(() => {
-    Job.create(body)
-      .then(() => callback(null, event))
-      .catch((err) => callback(Error(err)));
-  });
 };
 
-module.exports.getJobs = async (event) => {
+module.exports.getJobs = (event, context, callback) => {
   var body = JSON.parse(event.body);
 
   connectToDatabase().then(() => {
@@ -101,7 +112,11 @@ module.exports.getJobs = async (event) => {
     })
       .then((res) => {
         console.log(res);
+        callback(null, { statusCode: 200, body: JSON.stringify(res) });
       })
-      .catch((err) => Error(err));
+      .catch((err) => {
+        console.log(err);
+        callback(new Error(err));
+      });
   });
 };
