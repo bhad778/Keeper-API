@@ -95,6 +95,7 @@ module.exports.addJob = (event, context, callback) => {
 };
 
 module.exports.getJobs = (event, context, callback) => {
+  context.callbackWaitsForEmptyEventLoop = false;
   var body = JSON.parse(event.body);
 
   connectToDatabase().then(() => {
