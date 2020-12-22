@@ -65,6 +65,8 @@ module.exports.addEmployee = (event, context, callback) => {
   });
 };
 
+// TODO must take in how many jobs have already been created, then
+// determine from that what color should be added to the job
 module.exports.addJob = (event, context, callback) => {
   context.callbackWaitsForEmptyEventLoop = false;
   var body = JSON.parse(event.body);
