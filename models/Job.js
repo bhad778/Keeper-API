@@ -3,6 +3,7 @@ const JobSchema = new mongoose.Schema({
   title: String,
   description: String,
   address: String,
+  color: String,
   geoLocation: {
     type: {
       type: String,

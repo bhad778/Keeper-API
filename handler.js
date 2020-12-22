@@ -113,7 +113,13 @@ module.exports.getJobs = (event, context, callback) => {
     })
       .then((res) => {
         console.log(res);
-        callback(null, { statusCode: 200, body: JSON.stringify(res) });
+        callback(null, {
+          statusCode: 200,
+          headers: {
+            'Access-Control-Allow-Origin': '*', // Required for CORS support to work
+          },
+          body: JSON.stringify(res),
+        });
       })
       .catch((err) => {
         console.log(err);
