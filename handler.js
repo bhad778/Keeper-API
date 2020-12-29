@@ -1,11 +1,37 @@
-'use strict';
-require('dotenv').config({ path: './variables.env' });
+"use strict";
+require("dotenv").config({ path: "./variables.env" });
 
-const connectToDatabase = require('./db');
-const Employer = require('./models/Employer');
-const Employee = require('./models/Employee');
-const Job = require('./models/Job');
-const axios = require('axios');
+const connectToDatabase = require("./db");
+const Employer = require("./models/Employer");
+const Employee = require("./models/Employee");
+const Job = require("./models/Job");
+const Conversation = require("./models/Conversation");
+const Message = require("./models/Message");
+const axios = require("axios");
+
+module.exports.addConversation = (event, context, callback) => {
+  context.callbackWaitsForEmptyEventLoop = false;
+
+  connectToDatabase().then(() => {
+    Conversation.create(JSON.parse(event.body))
+      .then((res) => {
+        callback(null, { statusCode: 200, body: JSON.stringify(res) });
+      })
+      .catch((err) => callback(new Error(err)));
+  });
+};
+
+module.exports.addMessage = (event, context, callback) => {
+  context.callbackWaitsForEmptyEventLoop = false;
+
+  connectToDatabase().then(() => {
+    Message.create(JSON.parse(event.body))
+      .then((res) => {
+        callback(null, { statusCode: 200, body: JSON.stringify(res) });
+      })
+      .catch((err) => callback(new Error(err)));
+  });
+};
 
 module.exports.addCognitoUserToMongoDb = (event, context, callback) => {
   context.callbackWaitsForEmptyEventLoop = false;
@@ -15,14 +41,13 @@ module.exports.addCognitoUserToMongoDb = (event, context, callback) => {
     phoneNumber: event.request.userAttributes.phone_number,
     firstName: event.request.userAttributes.name,
     lastName: event.request.userAttributes.family_name,
-    accountType: event.request.userAttributes['custom:custom:accountType'],
-    companyName: event.request.userAttributes['custom:custom:companyName'],
+    accountType: event.request.userAttributes["custom:custom:accountType"],
+    companyName: event.request.userAttributes["custom:custom:companyName"],
   };
 
-  // change to if(userAttribute.type = "employee")
   // TODO fix error handling
   // TODO change trigger to post authentication
-  if (newUser.accountType === 'employer') {
+  if (newUser.accountType === "employer") {
     connectToDatabase().then(() => {
       Employer.create(newUser)
         .then((res) => {
@@ -30,7 +55,7 @@ module.exports.addCognitoUserToMongoDb = (event, context, callback) => {
         })
         .catch((err) => callback(new Error(err)));
     });
-  } else if (newUser.accountType === 'employee') {
+  } else if (newUser.accountType === "employee") {
     connectToDatabase().then(() => {
       Employee.create(newUser)
         .then((res) => {
@@ -78,7 +103,7 @@ module.exports.addJob = (event, context, callback) => {
     )
     .then((response) => {
       body.geoLocation = {
-        type: 'Point',
+        type: "Point",
         coordinates: [
           response.data.results[0].geometry.location.lng,
           response.data.results[0].geometry.location.lat,
@@ -105,7 +130,7 @@ module.exports.getJobs = (event, context, callback) => {
       geoLocation: {
         $near: {
           $geometry: {
-            type: 'Point',
+            type: "Point",
             coordinates: [body.lng, body.lat],
           },
           $maxDistance: body.distance,
@@ -118,7 +143,7 @@ module.exports.getJobs = (event, context, callback) => {
         callback(null, {
           statusCode: 200,
           headers: {
-            'Access-Control-Allow-Origin': '*', // Required for CORS support to work
+            "Access-Control-Allow-Origin": "*", // Required for CORS support to work
           },
           body: JSON.stringify(res),
         });

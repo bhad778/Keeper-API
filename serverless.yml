@@ -18,7 +18,7 @@ org: jobfindingapp778
 
 # You can pin your service to only deploy with a specific Serverless version
 # Check out our docs for more details
-frameworkVersion: '2'
+frameworkVersion: "2"
 
 provider:
   name: aws
@@ -94,6 +94,20 @@ functions:
     events:
       - http:
           path: getJobs
+          method: post
+          cors: true
+  addConversation:
+    handler: handler.addConversation
+    events:
+      - http:
+          path: addConversation
+          method: post
+          cors: true
+  addMessage:
+    handler: handler.addMessage
+    events:
+      - http:
+          path: addMessage
           method: post
           cors: true
 #      - websocket: $connect
