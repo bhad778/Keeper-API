@@ -110,6 +110,13 @@ functions:
           path: addMessage
           method: post
           cors: true
+  getConversationMessages:
+    handler: handler.getConversationMessages
+    events:
+      - http:
+          path: getConversationMessages
+          method: post
+          cors: true
 #      - websocket: $connect
 #      - s3: ${env:BUCKET}
 #      - schedule: rate(10 minutes)

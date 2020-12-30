@@ -9,6 +9,11 @@ const Conversation = require("./models/Conversation");
 const Message = require("./models/Message");
 const axios = require("axios");
 
+String.prototype.toObjectId = () => {
+  const ObjectId = require("mongoose").Types.ObjectId;
+  return new ObjectId(this.toString());
+};
+
 module.exports.addConversation = (event, context, callback) => {
   context.callbackWaitsForEmptyEventLoop = false;
 
@@ -18,6 +23,30 @@ module.exports.addConversation = (event, context, callback) => {
         callback(null, { statusCode: 200, body: JSON.stringify(res) });
       })
       .catch((err) => callback(new Error(err)));
+  });
+};
+
+module.exports.getConversationMessages = (event, context, callback) => {
+  context.callbackWaitsForEmptyEventLoop = false;
+
+  const body = JSON.parse(event.body);
+
+  connectToDatabase().then(() => {
+    Message.find({ id: body.conversationId.toObjectId })
+      .then((res) => {
+        console.log(res);
+        callback(null, {
+          statusCode: 200,
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+          },
+          body: JSON.stringify(res),
+        });
+      })
+      .catch((err) => {
+        console.log(err);
+        callback(new Error(err));
+      });
   });
 };
 
