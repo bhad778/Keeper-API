@@ -1,5 +1,6 @@
 "use strict";
 require("dotenv").config({ path: "./variables.env" });
+require("./patch.js");
 
 const connectToDatabase = require("./db");
 const Employer = require("./models/Employer");
@@ -7,6 +8,9 @@ const Employee = require("./models/Employee");
 const Job = require("./models/Job");
 const Conversation = require("./models/Conversation");
 const Message = require("./models/Message");
+const WebSocketConnection = require("./models/WebSocketConnection");
+const AWS = require("aws-sdk");
+
 const axios = require("axios");
 
 String.prototype.toObjectId = () => {
@@ -34,7 +38,6 @@ module.exports.getConversationMessages = (event, context, callback) => {
   connectToDatabase().then(() => {
     Message.find({ id: body.conversationId.toObjectId })
       .then((res) => {
-        console.log(res);
         callback(null, {
           statusCode: 200,
           headers: {
@@ -143,7 +146,13 @@ module.exports.addJob = (event, context, callback) => {
       connectToDatabase().then(() => {
         Job.create(body)
           .then((res) => {
-            callback(null, { statusCode: 200, body: JSON.stringify(res) });
+            callback(null, {
+              statusCode: 200,
+              headers: {
+                "Access-Control-Allow-Origin": "*",
+              },
+              body: JSON.stringify(res),
+            });
           })
           .catch((err) => callback(new Error(err)));
       });
@@ -168,7 +177,6 @@ module.exports.getJobs = (event, context, callback) => {
       },
     })
       .then((res) => {
-        console.log(res);
         callback(null, {
           statusCode: 200,
           headers: {
@@ -183,3 +191,150 @@ module.exports.getJobs = (event, context, callback) => {
       });
   });
 };
+
+module.exports.wsConnectHandler = (event, context, callback) => {
+  context.callbackWaitsForEmptyEventLoop = false;
+
+  connectToDatabase().then(() => {
+    Employee.update(
+      {
+        id: event.queryStringParameters.conversationId.toObjectId,
+        "participants.email": event.queryStringParameters.email,
+      },
+      {
+        $set: {
+          "participants.$.connectionId": event.requestContext.connectionId,
+        },
+      }
+    )
+      .then((res) => {
+        callback(null, { statusCode: 200, body: JSON.stringify(res) });
+      })
+      .catch((err) => callback(new Error(err)));
+  });
+
+  // connectToDatabase().then(() => {
+  //   Conversation.update(
+  //     {
+  //       id: event.queryStringParameters.conversationId.toObjectId,
+  //       "participants.email": event.queryStringParameters.email,
+  //     },
+  //     {
+  //       $set: {
+  //         "participants.$.connectionId": event.requestContext.connectionId,
+  //       },
+  //     }
+  //   )
+  //     .then((res) => {
+  //       callback(null, { statusCode: 200, body: JSON.stringify(res) });
+  //     })
+  //     .catch((err) => callback(new Error(err)));
+  // });
+};
+
+module.exports.wsDisconnectHandler = (event, context, callback) => {
+  context.callbackWaitsForEmptyEventLoop = false;
+
+  const body = JSON.parse(event.body);
+
+  connectToDatabase().then(() => {
+    WebSocketConnection.find({ connectionId: body.connectionId })
+      .deleteOne()
+      .then((res) => {
+        callback(null, { statusCode: 200, body: JSON.stringify(res) });
+      })
+      .catch((err) => callback(new Error(err)));
+  });
+};
+// module.exports.webSocketDefaultHandler = (event, context, callback) => {};
+
+module.exports.webSocketOnMessageHandler = (event, context, callback) => {
+  let send = undefined;
+  const apigwManagementApi = new AWS.ApiGatewayManagementApi({
+    apiVersion: "2018-11-29",
+    endpoint:
+      event.requestContext.domainName + "/" + event.requestContext.stage,
+  });
+  send = async (connectionId, data) => {
+    await apigwManagementApi
+      .postToConnection({ ConnectionId: connectionId, Data: `Echo: ${data}` })
+      .promise();
+  };
+  let message = JSON.parse(event.body).message;
+  connectToDatabase().then(() => {
+    WebSocketConnection.find()
+      .then((data) => {
+        console.log(data);
+        data.forEach((connection) => {
+          send(connection.connectionId, message);
+        });
+      })
+      .then(() => {
+        callback(null, { statusCode: 200 });
+      })
+      .catch((err) => callback(new Error(err)));
+  });
+};
+
+module.exports.wsSendMessage = (event, context, callback) => {
+  context.callbackWaitsForEmptyEventLoop = false;
+  console.log(event);
+
+  let send = undefined;
+  const body = JSON.parse(event.body);
+  const apigwManagementApi = new AWS.ApiGatewayManagementApi({
+    apiVersion: "2018-11-29",
+    endpoint:
+      event.requestContext.domainName + "/" + event.requestContext.stage,
+  });
+  send = async (connectionId, data) => {
+    await apigwManagementApi
+      .postToConnection({ ConnectionId: connectionId, Data: `Echo: ${data}` })
+      .promise();
+    callback(null, { statusCode: 200 });
+  };
+
+  send(body.connectionId, body.message);
+};
+
+module.exports.getEmployee = (event, context, callback) => {
+  context.callbackWaitsForEmptyEventLoop = false;
+
+  const body = JSON.parse(event.body);
+
+  connectToDatabase().then(() => {
+    Employee.find({ email: body.email })
+      .then((res) => {
+        callback(null, {
+          statusCode: 200,
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+          },
+          body: JSON.stringify(res),
+        });
+      })
+      .catch((err) => callback(new Error(err)));
+  });
+};
+
+module.exports.getConversation = (event, context, callback) => {
+  context.callbackWaitsForEmptyEventLoop = false;
+
+  const body = JSON.parse(event.body);
+
+  connectToDatabase().then(() => {
+    Conversation.find({ id: body.conversationId.toObjectId })
+      .then((res) => {
+        callback(null, {
+          statusCode: 200,
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+          },
+          body: JSON.stringify(res),
+        });
+      })
+      .catch((err) => callback(new Error(err)));
+  });
+};
+
+// module.exports.webSocketFooHandler = (event, context, callback) => {};
