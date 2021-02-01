@@ -59,7 +59,13 @@ module.exports.addMessage = (event, context, callback) => {
   connectToDatabase().then(() => {
     Message.create(JSON.parse(event.body))
       .then((res) => {
-        callback(null, { statusCode: 200, body: JSON.stringify(res) });
+        callback(null, {
+          statusCode: 200,
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+          },
+          body: JSON.stringify(res),
+        });
       })
       .catch((err) => callback(new Error(err)));
   });
@@ -195,23 +201,39 @@ module.exports.getJobs = (event, context, callback) => {
 module.exports.wsConnectHandler = (event, context, callback) => {
   context.callbackWaitsForEmptyEventLoop = false;
 
+  // if (event.queryStringParameters) {
+  //   connectToDatabase().then(() => {
+  //     Employee.update(
+  //       {
+  //         id: event.queryStringParameters.conversationId.toObjectId,
+  //         "participants.email": event.queryStringParameters.email,
+  //       },
+  //       {
+  //         $set: {
+  //           "participants.$.connectionId": event.requestContext.connectionId,
+  //         },
+  //       }
+  //     )
+  //       .then((res) => {
+  //         callback(null, { statusCode: 200, body: JSON.stringify(res) });
+  //       })
+  //       .catch((err) => callback(new Error(err)));
+  //   });
+  // } else {
+  console.log("event.requestContext" + event.requestContext);
+  console.log(
+    "event.requestContext.connectionId" + event.requestContext.connectionId
+  );
   connectToDatabase().then(() => {
-    Employee.update(
-      {
-        id: event.queryStringParameters.conversationId.toObjectId,
-        "participants.email": event.queryStringParameters.email,
-      },
-      {
-        $set: {
-          "participants.$.connectionId": event.requestContext.connectionId,
-        },
-      }
-    )
+    WebSocketConnection.create({
+      connectionId: event.requestContext.connectionId,
+    })
       .then((res) => {
         callback(null, { statusCode: 200, body: JSON.stringify(res) });
       })
       .catch((err) => callback(new Error(err)));
   });
+  // }
 
   // connectToDatabase().then(() => {
   //   Conversation.update(
@@ -249,6 +271,12 @@ module.exports.wsDisconnectHandler = (event, context, callback) => {
 // module.exports.webSocketDefaultHandler = (event, context, callback) => {};
 
 module.exports.webSocketOnMessageHandler = (event, context, callback) => {
+  console.log("body: " + event.body);
+  console.log("event: " + event);
+
+  console.log("event.body.message: " + event.body.message);
+  console.log("event: " + JSON.stringify(event));
+
   let send = undefined;
   const apigwManagementApi = new AWS.ApiGatewayManagementApi({
     apiVersion: "2018-11-29",
@@ -257,7 +285,7 @@ module.exports.webSocketOnMessageHandler = (event, context, callback) => {
   });
   send = async (connectionId, data) => {
     await apigwManagementApi
-      .postToConnection({ ConnectionId: connectionId, Data: `Echo: ${data}` })
+      .postToConnection({ ConnectionId: connectionId, Data: data })
       .promise();
   };
   let message = JSON.parse(event.body).message;
@@ -266,6 +294,8 @@ module.exports.webSocketOnMessageHandler = (event, context, callback) => {
       .then((data) => {
         console.log(data);
         data.forEach((connection) => {
+          console.log("connection.connectionId" + connection.connectionId);
+          console.log("message" + message);
           send(connection.connectionId, message);
         });
       })
@@ -278,15 +308,21 @@ module.exports.webSocketOnMessageHandler = (event, context, callback) => {
 
 module.exports.wsSendMessage = (event, context, callback) => {
   context.callbackWaitsForEmptyEventLoop = false;
-  console.log(event);
 
   let send = undefined;
+
   const body = JSON.parse(event.body);
+
+  console.log("event: " + JSON.stringify(event));
+
+  console.log("body.connectionId: " + body.connectionId);
+
   const apigwManagementApi = new AWS.ApiGatewayManagementApi({
     apiVersion: "2018-11-29",
     endpoint:
       event.requestContext.domainName + "/" + event.requestContext.stage,
   });
+
   send = async (connectionId, data) => {
     await apigwManagementApi
       .postToConnection({ ConnectionId: connectionId, Data: `Echo: ${data}` })
@@ -294,7 +330,7 @@ module.exports.wsSendMessage = (event, context, callback) => {
     callback(null, { statusCode: 200 });
   };
 
-  send(body.connectionId, body.message);
+  send(body.connectionId, body.message.text);
 };
 
 module.exports.getEmployee = (event, context, callback) => {
