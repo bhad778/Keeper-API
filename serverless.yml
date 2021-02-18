@@ -69,6 +69,13 @@ functions:
           path: getJobs
           method: post
           cors: true
+  getEmployersJobs:
+    handler: handler.getEmployersJobs
+    events:
+      - http:
+          path: getEmployersJobs
+          method: post
+          cors: true
   addConversation:
     handler: handler.addConversation
     events:

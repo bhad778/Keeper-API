@@ -198,6 +198,28 @@ module.exports.getJobs = (event, context, callback) => {
   });
 };
 
+module.exports.getEmployersJobs = (event, context, callback) => {
+  context.callbackWaitsForEmptyEventLoop = false;
+  var body = JSON.parse(event.body);
+
+  connectToDatabase().then(() => {
+    Job.find({ email: body.email })
+      .then((res) => {
+        callback(null, {
+          statusCode: 200,
+          headers: {
+            "Access-Control-Allow-Origin": "*", // Required for CORS support to work
+          },
+          body: JSON.stringify(res),
+        });
+      })
+      .catch((err) => {
+        console.log(err);
+        callback(new Error(err));
+      });
+  });
+};
+
 module.exports.wsConnectHandler = (event, context, callback) => {
   context.callbackWaitsForEmptyEventLoop = false;
 
@@ -220,10 +242,7 @@ module.exports.wsConnectHandler = (event, context, callback) => {
   //       .catch((err) => callback(new Error(err)));
   //   });
   // } else {
-  console.log("event.requestContext" + event.requestContext);
-  console.log(
-    "event.requestContext.connectionId" + event.requestContext.connectionId
-  );
+
   connectToDatabase().then(() => {
     WebSocketConnection.create({
       connectionId: event.requestContext.connectionId,
@@ -306,33 +325,6 @@ module.exports.webSocketOnMessageHandler = (event, context, callback) => {
   });
 };
 
-module.exports.wsSendMessage = (event, context, callback) => {
-  context.callbackWaitsForEmptyEventLoop = false;
-
-  let send = undefined;
-
-  const body = JSON.parse(event.body);
-
-  console.log("event: " + JSON.stringify(event));
-
-  console.log("body.connectionId: " + body.connectionId);
-
-  const apigwManagementApi = new AWS.ApiGatewayManagementApi({
-    apiVersion: "2018-11-29",
-    endpoint:
-      event.requestContext.domainName + "/" + event.requestContext.stage,
-  });
-
-  send = async (connectionId, data) => {
-    await apigwManagementApi
-      .postToConnection({ ConnectionId: connectionId, Data: `Echo: ${data}` })
-      .promise();
-    callback(null, { statusCode: 200 });
-  };
-
-  send(body.connectionId, body.message.text);
-};
-
 module.exports.getEmployee = (event, context, callback) => {
   context.callbackWaitsForEmptyEventLoop = false;
 
@@ -340,6 +332,26 @@ module.exports.getEmployee = (event, context, callback) => {
 
   connectToDatabase().then(() => {
     Employee.find({ email: body.email })
+      .then((res) => {
+        callback(null, {
+          statusCode: 200,
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+          },
+          body: JSON.stringify(res),
+        });
+      })
+      .catch((err) => callback(new Error(err)));
+  });
+};
+
+module.exports.getConversation = (event, context, callback) => {
+  context.callbackWaitsForEmptyEventLoop = false;
+
+  const body = JSON.parse(event.body);
+
+  connectToDatabase().then(() => {
+    Conversation.find({ id: body.conversationId.toObjectId })
       .then((res) => {
         callback(null, {
           statusCode: 200,
