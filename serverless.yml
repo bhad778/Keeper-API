@@ -35,112 +35,105 @@ plugins:
 
 functions:
   addCognitoUserToMongoDb:
-    handler: handler.addCognitoUserToMongoDb
+    handler: functions/users.addCognitoUserToMongoDb
     events:
       - http:
           path: addCognitoUserToMongoDb
           method: post
           cors: true
   addEmployer:
-    handler: handler.addEmployer
+    handler: functions/users.addEmployer
     events:
       - http:
           path: addEmployer
           method: post
           cors: true
   addEmployee:
-    handler: handler.addEmployee
+    handler: functions/users.addEmployee
     events:
       - http:
           path: addEmployee
           method: post
           cors: true
+  getEmployee:
+    handler: functions/users.getEmployee
+    events:
+      - http:
+          path: getEmployee
+          method: post
+          cors: true
   addJob:
-    handler: handler.addJob
+    handler: functions/jobs.addJob
     events:
       - http:
           path: addJob
           method: post
           cors: true
   editJob:
-    handler: handler.editJob
+    handler: functions/jobs.editJob
     events:
       - http:
           path: editJob
           method: post
           cors: true
   getJobs:
-    handler: handler.getJobs
+    handler: functions/jobs.getJobs
     events:
       - http:
           path: getJobs
           method: post
           cors: true
   getEmployersJobs:
-    handler: handler.getEmployersJobs
+    handler: functions/jobs.getEmployersJobs
     events:
       - http:
           path: getEmployersJobs
           method: post
           cors: true
   addConversation:
-    handler: handler.addConversation
+    handler: functions/conversations.addConversation
     events:
       - http:
           path: addConversation
           method: post
           cors: true
-  addMessage:
-    handler: handler.addMessage
-    events:
-      - http:
-          path: addMessage
-          method: post
-          cors: true
-  getConversationMessages:
-    handler: handler.getConversationMessages
-    events:
-      - http:
-          path: getConversationMessages
-          method: post
-          cors: true
-  wsSendMessage:
-    handler: handler.wsSendMessage
-    events:
-      - http:
-          path: wsSendMessage
-          method: post
-          cors: true
-  getEmployee:
-    handler: handler.getEmployee
-    events:
-      - http:
-          path: getEmployee
-          method: post
-          cors: true
   getConversation:
-    handler: handler.getConversation
+    handler: functions/conversations.getConversation
     events:
       - http:
           path: getConversation
           method: post
           cors: true
+  getConversationMessages:
+    handler: functions/conversations.getConversationMessages
+    events:
+      - http:
+          path: getConversationMessages
+          method: post
+          cors: true
+  addMessage:
+    handler: functions/conversations.addMessage
+    events:
+      - http:
+          path: addMessage
+          method: post
+          cors: true
   wsConnectHandler:
-    handler: handler.wsConnectHandler
+    handler: functions/conversations.wsConnectHandler
     events:
       - websocket:
           route: $connect
   wsDisconnectHandler:
-    handler: handler.wsDisconnectHandler
+    handler: functions/conversations.wsDisconnectHandler
     events:
       - websocket:
           route: $disconnect
   wsDefaultHandler:
-    handler: handler.wsDefaultHandler
+    handler: functions/conversations.wsDefaultHandler
     events:
       - websocket: $default #simple event definition without extra route property
   webSocketOnMessageHandler:
-    handler: handler.webSocketOnMessageHandler
+    handler: functions/conversations.webSocketOnMessageHandler
     events:
       - websocket:
           route: onMessage # will trigger if $request.body.action === "onMessage"
