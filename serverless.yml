@@ -62,6 +62,13 @@ functions:
           path: addJob
           method: post
           cors: true
+  editJob:
+    handler: handler.editJob
+    events:
+      - http:
+          path: editJob
+          method: post
+          cors: true
   getJobs:
     handler: handler.getJobs
     events:

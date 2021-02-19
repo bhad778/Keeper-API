@@ -165,6 +165,53 @@ module.exports.addJob = (event, context, callback) => {
     });
 };
 
+module.exports.editJob = (event, context, callback) => {
+  context.callbackWaitsForEmptyEventLoop = false;
+  var body = JSON.parse(event.body);
+  var id = body._id;
+  delete body._id;
+  var uriEncodedAddress = encodeURIComponent(body.address);
+
+  // TODO could change it so it doesnt get coordinates from address unless address is different
+  axios
+    .get(
+      `https://maps.googleapis.com/maps/api/geocode/json?address=${uriEncodedAddress}&key=AIzaSyDoUt-NQKYX-8sZU87ISTxNIg7DQijLZ7A`
+    )
+    .then((response) => {
+      body.geoLocation = {
+        type: "Point",
+        coordinates: [
+          response.data.results[0].geometry.location.lng,
+          response.data.results[0].geometry.location.lat,
+        ],
+      };
+    })
+    .then(() => {
+      connectToDatabase().then(() => {
+        Job.updateOne(
+          { id: id.toObjectId },
+          body,
+          { multi: false },
+          function (err) {
+            if (err) {
+              callback(new Error(err));
+            }
+          }
+        )
+          .then((res) => {
+            callback(null, {
+              statusCode: 200,
+              headers: {
+                "Access-Control-Allow-Origin": "*",
+              },
+              body: JSON.stringify(res),
+            });
+          })
+          .catch((err) => callback(new Error(err)));
+      });
+    });
+};
+
 module.exports.getJobs = (event, context, callback) => {
   context.callbackWaitsForEmptyEventLoop = false;
   var body = JSON.parse(event.body);
@@ -223,26 +270,6 @@ module.exports.getEmployersJobs = (event, context, callback) => {
 module.exports.wsConnectHandler = (event, context, callback) => {
   context.callbackWaitsForEmptyEventLoop = false;
 
-  // if (event.queryStringParameters) {
-  //   connectToDatabase().then(() => {
-  //     Employee.update(
-  //       {
-  //         id: event.queryStringParameters.conversationId.toObjectId,
-  //         "participants.email": event.queryStringParameters.email,
-  //       },
-  //       {
-  //         $set: {
-  //           "participants.$.connectionId": event.requestContext.connectionId,
-  //         },
-  //       }
-  //     )
-  //       .then((res) => {
-  //         callback(null, { statusCode: 200, body: JSON.stringify(res) });
-  //       })
-  //       .catch((err) => callback(new Error(err)));
-  //   });
-  // } else {
-
   connectToDatabase().then(() => {
     WebSocketConnection.create({
       connectionId: event.requestContext.connectionId,
@@ -252,25 +279,6 @@ module.exports.wsConnectHandler = (event, context, callback) => {
       })
       .catch((err) => callback(new Error(err)));
   });
-  // }
-
-  // connectToDatabase().then(() => {
-  //   Conversation.update(
-  //     {
-  //       id: event.queryStringParameters.conversationId.toObjectId,
-  //       "participants.email": event.queryStringParameters.email,
-  //     },
-  //     {
-  //       $set: {
-  //         "participants.$.connectionId": event.requestContext.connectionId,
-  //       },
-  //     }
-  //   )
-  //     .then((res) => {
-  //       callback(null, { statusCode: 200, body: JSON.stringify(res) });
-  //     })
-  //     .catch((err) => callback(new Error(err)));
-  // });
 };
 
 module.exports.wsDisconnectHandler = (event, context, callback) => {
@@ -325,6 +333,8 @@ module.exports.webSocketOnMessageHandler = (event, context, callback) => {
   });
 };
 
+// the employee/employer object is going to have most data needed
+// for the whole app, so this is used on app load for matches, settings, etc.
 module.exports.getEmployee = (event, context, callback) => {
   context.callbackWaitsForEmptyEventLoop = false;
 
