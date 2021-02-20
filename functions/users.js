@@ -47,7 +47,6 @@ module.exports.addCognitoUserToMongoDb = (event, context, callback) => {
 
 // happens when two people match, takes two whole user objects which
 // then it sticks the id, into the matches array of the respective participants
-//
 module.exports.match = (event, context, callback) => {
   context.callbackWaitsForEmptyEventLoop = false;
   var body = JSON.parse(event.body);
