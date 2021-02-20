@@ -41,6 +41,13 @@ functions:
           path: addCognitoUserToMongoDb
           method: post
           cors: true
+  match:
+    handler: functions/users.match
+    events:
+      - http:
+          path: match
+          method: post
+          cors: true
   addEmployer:
     handler: functions/users.addEmployer
     events:
@@ -60,6 +67,13 @@ functions:
     events:
       - http:
           path: getEmployee
+          method: post
+          cors: true
+  getEmployer:
+    handler: functions/users.getEmployer
+    events:
+      - http:
+          path: getEmployer
           method: post
           cors: true
   addJob:
