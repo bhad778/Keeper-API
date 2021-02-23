@@ -1,9 +1,8 @@
 "use strict";
-require("dotenv").config({ path: "./variables.env" });
-require("./patch.js");
+require("dotenv").config({ path: "../variables.env" });
 
-const connectToDatabase = require("./db");
-const Job = require("./models/Job");
+const connectToDatabase = require("../db");
+const Job = require("../models/Job");
 
 const axios = require("axios");
 

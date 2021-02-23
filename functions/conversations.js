@@ -1,11 +1,11 @@
 "use strict";
-require("dotenv").config({ path: "./variables.env" });
-require("./patch.js");
+require("dotenv").config({ path: "../variables.env" });
+require("../patch");
 
-const connectToDatabase = require("./db");
-const Conversation = require("./models/Conversation");
-const Message = require("./models/Message");
-const WebSocketConnection = require("./models/WebSocketConnection");
+const connectToDatabase = require("../db");
+const Conversation = require("../models/Conversation");
+const Message = require("../models/Message");
+const WebSocketConnection = require("../models/WebSocketConnection");
 const AWS = require("aws-sdk");
 
 String.prototype.toObjectId = () => {
