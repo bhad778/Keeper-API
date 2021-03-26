@@ -25,7 +25,7 @@ module.exports.addCognitoUserToMongoDb = (event, context, callback) => {
 
   // TODO fix error handling
   // TODO change trigger to post authentication
-  if (newUser.accountType === "employer") {
+  if (newUser.accountType == "employer") {
     connectToDatabase().then(() => {
       Employer.create(newUser)
         .then((res) => {
@@ -33,7 +33,7 @@ module.exports.addCognitoUserToMongoDb = (event, context, callback) => {
         })
         .catch((err) => callback(new Error(err)));
     });
-  } else if (newUser.accountType === "employee") {
+  } else if (newUser.accountType == "employee") {
     connectToDatabase().then(() => {
       Employee.create(newUser)
         .then((res) => {
