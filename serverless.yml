@@ -48,6 +48,13 @@ functions:
           path: match
           method: post
           cors: true
+  getMatches:
+    handler: functions/users.getMatches
+    events:
+      - http:
+          path: getMatches
+          method: post
+          cors: true
   addEmployer:
     handler: functions/users.addEmployer
     events:

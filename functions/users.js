@@ -11,6 +11,48 @@ String.prototype.toObjectId = () => {
 };
 
 // start employer/employee shared functions
+module.exports.getMatches = (event, context, callback) => {
+  context.callbackWaitsForEmptyEventLoop = false;
+
+  const body = JSON.parse(event.body);
+
+  connectToDatabase().then(() => {
+    if (body.accountType == "employee") {
+      Employer.find({
+        "_id": {
+          $in: body.matches,
+        },
+      })
+        .then((res) => {
+          callback(null, {
+            statusCode: 200,
+            headers: {
+              "Access-Control-Allow-Origin": "*",
+            },
+            body: JSON.stringify(res),
+          });
+        })
+        .catch((err) => callback(new Error(err)));
+    } else if (body.accountType === "employer") {
+      Employee.find({
+        "_id": {
+          $in: body.matches,
+        },
+      })
+        .then((res) => {
+          callback(null, {
+            statusCode: 200,
+            headers: {
+              "Access-Control-Allow-Origin": "*",
+            },
+            body: JSON.stringify(res),
+          });
+        })
+        .catch((err) => callback(new Error(err)));
+    }
+  });
+};
+
 module.exports.addCognitoUserToMongoDb = (event, context, callback) => {
   context.callbackWaitsForEmptyEventLoop = false;
 
