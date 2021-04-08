@@ -1,13 +1,22 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const JobSchema = new mongoose.Schema({
   title: String,
   description: String,
+  companyName: String,
+  jobOverview: String,
+  logo: String,
+  compensationType: String,
+  compensation: Array,
+  experience: String,
+  employment: String,
+  education: String,
+  responsibilities: Array,
   address: String,
   color: String,
   geoLocation: {
     type: {
       type: String,
-      enum: ['Point'],
+      enum: ["Point"],
       required: true,
     },
     coordinates: {
@@ -17,6 +26,6 @@ const JobSchema = new mongoose.Schema({
   },
 });
 
-JobSchema.index({ geoLocation: '2dsphere' });
+JobSchema.index({ geoLocation: "2dsphere" });
 
-module.exports = mongoose.model('Jobs', JobSchema);
+module.exports = mongoose.model("Jobs", JobSchema);
