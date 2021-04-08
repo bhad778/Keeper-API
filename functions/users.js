@@ -190,6 +190,39 @@ module.exports.getEmployer = (event, context, callback) => {
       .catch((err) => callback(new Error(err)));
   });
 };
+
+module.exports.getEmployeesForSwiping = (event, context, callback) => {
+  context.callbackWaitsForEmptyEventLoop = false;
+  var body = JSON.parse(event.body);
+
+  connectToDatabase().then(() => {
+    Employee.find({
+      geoLocation: {
+        $near: {
+          $geometry: {
+            type: "Point",
+            coordinates: [body.lng, body.lat],
+          },
+          $maxDistance: body.distance,
+          $minDistance: 1,
+        },
+      },
+    })
+      .then((res) => {
+        callback(null, {
+          statusCode: 200,
+          headers: {
+            "Access-Control-Allow-Origin": "*", // Required for CORS support to work
+          },
+          body: JSON.stringify(res),
+        });
+      })
+      .catch((err) => {
+        console.log(err);
+        callback(new Error(err));
+      });
+  });
+};
 //end employer functions
 
 // employee functions

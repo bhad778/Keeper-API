@@ -20,7 +20,7 @@ module.exports.addJob = (event, context, callback) => {
 
   axios
     .get(
-      `https://maps.googleapis.com/maps/api/geocode/json?address=${uriEncodedAddress}&key=AIzaSyDoUt-NQKYX-8sZU87ISTxNIg7DQijLZ7A`
+      `https://maps.googleapis.com/maps/api/geocode/json?address=${uriEncodedAddress}&key=AIzaSyB0GiWadL-4lSXe7PNO9Vr47iTC4t7C94I`
     )
     .then((response) => {
       body.geoLocation = {

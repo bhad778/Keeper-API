@@ -76,6 +76,13 @@ functions:
           path: getEmployee
           method: post
           cors: true
+  getEmployeesForSwiping:
+    handler: functions/users.getEmployeesForSwiping
+    events:
+      - http:
+          path: getEmployeesForSwiping
+          method: post
+          cors: true
   getEmployer:
     handler: functions/users.getEmployer
     events:
