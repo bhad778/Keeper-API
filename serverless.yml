@@ -90,6 +90,13 @@ functions:
           path: getEmployer
           method: post
           cors: true
+  getEmployerData:
+    handler: functions/users.getEmployerData
+    events:
+      - http:
+          path: getEmployerData
+          method: post
+          cors: true
   addJob:
     handler: functions/jobs.addJob
     events:

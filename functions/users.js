@@ -4,6 +4,7 @@ require("dotenv").config({ path: "../variables.env" });
 const connectToDatabase = require("../db");
 const Employer = require("../models/Employer");
 const Employee = require("../models/Employee");
+const axios = require("axios");
 
 String.prototype.toObjectId = () => {
   const ObjectId = require("mongoose").Types.ObjectId;
@@ -186,6 +187,61 @@ module.exports.getEmployer = (event, context, callback) => {
           },
           body: JSON.stringify(res),
         });
+      })
+      .catch((err) => callback(new Error(err)));
+  });
+};
+
+// gets all data needs for employer for using app
+module.exports.getEmployerData = (event, context, callback) => {
+  context.callbackWaitsForEmptyEventLoop = false;
+
+  const body = JSON.parse(event.body);
+
+  connectToDatabase().then(() => {
+    var user;
+    Employer.find({ email: body.email })
+      .then((res) => {
+        user = res[0]._doc;
+        axios
+          .all([
+            axios.post(
+              "https://mzl4y00fba.execute-api.us-east-1.amazonaws.com/dev/getMatches",
+              {
+                "accountType": "employer",
+                "matches": res[0]._doc.matches,
+              }
+            ),
+            axios.post(
+              "https://mzl4y00fba.execute-api.us-east-1.amazonaws.com/dev/getJobs",
+              {
+                "lng": -84.73555943153565,
+                "lat": 33.96886433181504,
+                "distance": 100000,
+              }
+            ),
+            axios.post(
+              "https://mzl4y00fba.execute-api.us-east-1.amazonaws.com/dev/getEmployersJobs",
+              {
+                "email": body.email,
+              }
+            ),
+          ])
+          .then((res) => {
+            var returnArray = {
+              userData: user,
+              matchesData: res[0].data,
+              jobsData: res[1].data,
+              employersJobs: res[2].data,
+            };
+            callback(null, {
+              statusCode: 200,
+              headers: {
+                "Access-Control-Allow-Origin": "*",
+              },
+              body: JSON.stringify(returnArray),
+            });
+          });
       })
       .catch((err) => callback(new Error(err)));
   });
