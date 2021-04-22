@@ -213,7 +213,7 @@ module.exports.getEmployerData = (event, context, callback) => {
               }
             ),
             axios.post(
-              "https://mzl4y00fba.execute-api.us-east-1.amazonaws.com/dev/getJobs",
+              "https://mzl4y00fba.execute-api.us-east-1.amazonaws.com/dev/getEmployeesForSwiping",
               {
                 "lng": -84.73555943153565,
                 "lat": 33.96886433181504,
@@ -231,7 +231,7 @@ module.exports.getEmployerData = (event, context, callback) => {
             var returnArray = {
               userData: user,
               matchesData: res[0].data,
-              jobsData: res[1].data,
+              employeesForSwiping: res[1].data,
               employersJobs: res[2].data,
             };
             callback(null, {
@@ -282,16 +282,40 @@ module.exports.getEmployeesForSwiping = (event, context, callback) => {
 //end employer functions
 
 // employee functions
+
 module.exports.addEmployee = (event, context, callback) => {
   context.callbackWaitsForEmptyEventLoop = false;
+  var body = JSON.parse(event.body);
+  var uriEncodedCity = encodeURIComponent(body.city);
 
-  connectToDatabase().then(() => {
-    Employee.create(JSON.parse(event.body))
-      .then((res) => {
-        callback(null, { statusCode: 200, body: JSON.stringify(res) });
-      })
-      .catch((err) => callback(new Error(err)));
-  });
+  axios
+    .get(
+      `https://maps.googleapis.com/maps/api/geocode/json?address=${uriEncodedCity}&key=AIzaSyB0GiWadL-4lSXe7PNO9Vr47iTC4t7C94I`
+    )
+    .then((response) => {
+      body.geoLocation = {
+        type: "Point",
+        coordinates: [
+          response.data.results[0].geometry.location.lng,
+          response.data.results[0].geometry.location.lat,
+        ],
+      };
+    })
+    .then(() => {
+      connectToDatabase().then(() => {
+        Employee.create(body)
+          .then((res) => {
+            callback(null, {
+              statusCode: 200,
+              headers: {
+                "Access-Control-Allow-Origin": "*",
+              },
+              body: JSON.stringify(res),
+            });
+          })
+          .catch((err) => callback(new Error(err)));
+      });
+    });
 };
 
 // the employee/employer object is going to have most data needed
