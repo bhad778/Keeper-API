@@ -13,7 +13,9 @@
     "aws-sdk": "^2.831.0",
     "axios": "^0.21.1",
     "dotenv": "^8.2.0",
-    "mongoose": "^5.11.4"
+    "file-type": "^5.2.0",
+    "mongoose": "^5.11.4",
+    "uuid": "^3.3.2"
   },
   "devDependencies": {
     "eslint": "^7.15.0",

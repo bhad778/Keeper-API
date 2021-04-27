@@ -1,23 +1,7 @@
-# Welcome to Serverless!
-#
-# This file is the main config file for your service.
-# It's very minimal at this point and uses default values.
-# You can always add more config options for more control.
-# We've included some commented out config examples here.
-# Just uncomment any of them to get that config option.
-#
-# For full config options, check the docs:
-#    docs.serverless.com
-#
-# Happy Coding!
-
 service: pare
-# app and org for use with dashboard.serverless.com
 app: pare
 org: jobfindingapp778
 
-# You can pin your service to only deploy with a specific Serverless version
-# Check out our docs for more details
 frameworkVersion: "2"
 
 provider:
@@ -25,15 +9,39 @@ provider:
   runtime: nodejs12.x
   websocketsApiName: job-app-websockets-api
   websocketsApiRouteSelectionExpression: $request.body.action # custom routes are selected by the value of the action property in the body
+  environment:
+    keeperImageUploadBucket: ${self:custom.keeperImageUploadBucket}
+    region: ${self:provider.region}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - s3:*
+      Resource: "*"
 
-# you can overwrite defaults here
-#  stage: dev
 region: us-east-1
 
 plugins:
   - serverless-offline
 
+custom:
+  keeperImageUploadBucket: keeper-image-upload-bucket
+
+resources:
+  Resources:
+    KeeperImageUploadBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.keeperImageUploadBucket}
+        AccessControl: PublicRead
+
 functions:
+  imageUpload:
+    handler: functions/misc.imageUpload
+    events:
+      - http:
+          path: imageUpload
+          method: post
+          cors: true
   addCognitoUserToMongoDb:
     handler: functions/users.addCognitoUserToMongoDb
     events:
