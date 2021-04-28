@@ -13,6 +13,7 @@ const JobSchema = new mongoose.Schema({
   responsibilities: Array,
   address: String,
   color: String,
+  jobImageUrl: String,
   geoLocation: {
     type: {
       type: String,

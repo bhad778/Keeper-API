@@ -65,7 +65,7 @@ module.exports.imageUpload = async (event) => {
         "Access-Control-Allow-Origin": "*",
       },
       body: JSON.stringify({
-        imageURL: uploadResult.Location,
+        jobImageURL: uploadResult.Location,
       }),
     };
   } catch (error) {
