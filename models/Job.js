@@ -4,7 +4,6 @@ const JobSchema = new mongoose.Schema({
   description: String,
   companyName: String,
   jobOverview: String,
-  logo: String,
   compensationType: String,
   compensation: Array,
   experience: String,
@@ -14,6 +13,8 @@ const JobSchema = new mongoose.Schema({
   address: String,
   color: String,
   jobImageUrl: String,
+  benefits: Array,
+  employeesAlreadySwipedOn: Array,
   geoLocation: {
     type: {
       type: String,

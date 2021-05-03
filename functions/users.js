@@ -229,7 +229,7 @@ module.exports.getEmployerData = (event, context, callback) => {
           ])
           .then((res) => {
             var returnArray = {
-              userData: user,
+              loggedInUserData: user,
               matchesData: res[0].data,
               employeesForSwiping: res[1].data,
               employersJobs: res[2].data,

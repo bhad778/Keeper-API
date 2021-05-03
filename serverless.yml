@@ -105,6 +105,13 @@ functions:
           path: getEmployerData
           method: post
           cors: true
+  recordJobsSwipes:
+    handler: functions/jobs.recordJobsSwipes
+    events:
+      - http:
+          path: recordJobsSwipes
+          method: post
+          cors: true
   addJob:
     handler: functions/jobs.addJob
     events:
