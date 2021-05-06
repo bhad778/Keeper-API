@@ -213,14 +213,6 @@ module.exports.getEmployerData = (event, context, callback) => {
               }
             ),
             axios.post(
-              "https://mzl4y00fba.execute-api.us-east-1.amazonaws.com/dev/getEmployeesForSwiping",
-              {
-                "lng": -84.73555943153565,
-                "lat": 33.96886433181504,
-                "distance": 100000,
-              }
-            ),
-            axios.post(
               "https://mzl4y00fba.execute-api.us-east-1.amazonaws.com/dev/getEmployersJobs",
               {
                 "email": body.email,
@@ -231,8 +223,7 @@ module.exports.getEmployerData = (event, context, callback) => {
             var returnArray = {
               loggedInUserData: user,
               matchesData: res[0].data,
-              employeesForSwiping: res[1].data,
-              employersJobs: res[2].data,
+              employersJobs: res[1].data,
             };
             callback(null, {
               statusCode: 200,
@@ -251,19 +242,44 @@ module.exports.getEmployeesForSwiping = (event, context, callback) => {
   context.callbackWaitsForEmptyEventLoop = false;
   var body = JSON.parse(event.body);
 
+  var filters = [];
+
+  if (body.filters) {
+    body.filtersArray.map((item) => {
+      var key = Object.keys(item);
+      var object = {
+        [key[0]]: item[key],
+      };
+      filters.push(object);
+    });
+  }
+
+  var alreadySwipedOnIds = [];
+
+  body.employeesAlreadySwipedOn.map((item) => {
+    alreadySwipedOnIds.push(item.employeeId);
+  });
+
   connectToDatabase().then(() => {
     Employee.find({
-      geoLocation: {
-        $near: {
-          $geometry: {
-            type: "Point",
-            coordinates: [body.lng, body.lat],
+      $and: [
+        {
+          geoLocation: {
+            $near: {
+              $geometry: {
+                type: "Point",
+                coordinates: [body.lng, body.lat],
+              },
+              $maxDistance: body.distance,
+              $minDistance: 1,
+            },
           },
-          $maxDistance: body.distance,
-          $minDistance: 1,
         },
-      },
+        { _id: { $nin: alreadySwipedOnIds } },
+        ...filters,
+      ],
     })
+      // .limit(2)
       .then((res) => {
         callback(null, {
           statusCode: 200,
